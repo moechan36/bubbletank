@@ -48,7 +48,7 @@ function addBubble() {
   input.value = "";
 }
 
-/* サイズ調整（SP配慮） */
+/* ===== サイズ調整 ===== */
 function calcSize(text) {
   const base = window.innerWidth < 600 ? 80 : 90;
   const extra = Math.min(text.length * 2.5, 70);
@@ -81,7 +81,7 @@ function createBubble(data) {
     }, 450);
   };
 
-  /* PC */
+  /* PC：ダブルクリック */
   bubble.addEventListener("dblclick", popBubble);
 
   /* SP：長押し */
@@ -94,7 +94,7 @@ function createBubble(data) {
   });
 }
 
-/* ===== シュワシュワ ===== */
+/* ===== シュワシュワ粒子 ===== */
 function createFizz(bubble) {
   const rect = bubble.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
@@ -122,7 +122,7 @@ function save() {
   localStorage.setItem("bubbles", JSON.stringify(bubbles));
 }
 
-/* ===== 入力フォーカス時のズレ防止（iOS） ===== */
+/* ===== 入力時の画面ズレ防止（iOS） ===== */
 input.addEventListener("focus", () => {
   document.body.style.position = "fixed";
   document.body.style.width = "100%";
@@ -132,3 +132,64 @@ input.addEventListener("blur", () => {
   document.body.style.position = "";
   document.body.style.width = "";
 });
+
+/* =====================================================
+   📱 スマホを振ったらバブルが散らばる
+===================================================== */
+
+/* iOS：センサー許可 */
+if (
+  typeof DeviceMotionEvent !== "undefined" &&
+  typeof DeviceMotionEvent.requestPermission === "function"
+) {
+  document.body.addEventListener(
+    "click",
+    () => {
+      DeviceMotionEvent.requestPermission();
+    },
+    { once: true }
+  );
+}
+
+/* シェイク検知 */
+let lastShakeTime = 0;
+
+window.addEventListener("devicemotion", (e) => {
+  const acc = e.accelerationIncludingGravity;
+  if (!acc) return;
+
+  const power =
+    Math.abs(acc.x || 0) +
+    Math.abs(acc.y || 0) +
+    Math.abs(acc.z || 0);
+
+  const now = Date.now();
+
+  // しっかり振ったときだけ反応
+  if (power > 25 && now - lastShakeTime > 1200) {
+    lastShakeTime = now;
+    scatterBubbles();
+  }
+});
+
+/* バブルを散らす */
+function scatterBubbles() {
+  const all = document.querySelectorAll(".bubble");
+
+  all.forEach(bubble => {
+    const dx = (Math.random() - 0.5) * 160;
+    const dy = (Math.random() - 0.5) * 160;
+
+    bubble.animate(
+      [
+        { transform: "translate(0,0)" },
+        { transform: `translate(${dx}px, ${dy}px)` }
+      ],
+      {
+        duration: 700,
+        easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        fill: "forwards"
+      }
+    );
+  });
+}
