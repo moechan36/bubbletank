@@ -1,0 +1,151 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #0b1320;
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+}
+
+#tank {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== シャボン玉 ===== */
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 14px;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+
+  background:
+    radial-gradient(circle at 30% 30%,
+      rgba(255,255,255,0.95),
+      rgba(255,255,255,0.35) 20%,
+      rgba(180,220,255,0.25) 45%,
+      rgba(255,255,255,0.08) 70%,
+      rgba(255,255,255,0.03) 100%);
+
+  box-shadow:
+    0 0 18px rgba(180,220,255,0.6),
+    inset 0 0 22px rgba(255,255,255,0.45);
+
+  backdrop-filter: blur(2px);
+  animation: float 6s ease-in-out infinite;
+}
+
+/* 中の文字 */
+.bubble span {
+  font-size: 14px;
+  color: rgba(255,255,255,0.95);
+  line-height: 1.35;
+  word-break: break-word;
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.35);
+}
+
+/* その場でふよふよ */
+@keyframes float {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* ===== 弾ける ===== */
+.bubble.pop {
+  animation: pop 0.45s ease-out forwards;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); opacity: 1; }
+  40%  { transform: scale(1.25); filter: brightness(1.4); }
+  100% { transform: scale(0.3); opacity: 0; }
+}
+
+/* 輪っか */
+.bubble::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.6);
+  opacity: 0;
+}
+
+.bubble.pop::after {
+  animation: ring 0.45s ease-out;
+}
+
+@keyframes ring {
+  0%   { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* ===== シュワシュワ粒子 ===== */
+.splash {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(220,240,255,0.9);
+  pointer-events: none;
+  animation: fizz 0.8s ease-out forwards;
+}
+
+@keyframes fizz {
+  0% {
+    transform: translate(0,0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* ===== 入力 ===== */
+#inputArea {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+#inputArea input {
+  padding: 10px 14px;
+  border-radius: 20px;
+  border: none;
+  width: 220px;
+  font-size: 14px;
+}
+
+#inputArea button {
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: none;
+  background: #6fa8ff;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ===== SP調整 ===== */
+@media (max-width: 600px) {
+  #inputArea {
+    bottom: 80px; /* キーボード回避 */
+  }
+
+  .bubble span {
+    font-size: 13px;
+  }
+}
