@@ -126,7 +126,7 @@ html, body {
   border-radius: 20px;
   border: none;
   width: 220px;
-  font-size: 14px;
+  font-size: 16px; /* ← 超重要：ズーム防止 */
 }
 
 #inputArea button {
