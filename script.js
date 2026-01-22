@@ -3,6 +3,7 @@ const input = document.getElementById("bubbleInput");
 const addBtn = document.getElementById("addBubble");
 
 let bubbles = JSON.parse(localStorage.getItem("bubbles")) || [];
+let bubbleElements = [];
 
 /* ===== 弾ける音 ===== */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -22,6 +23,7 @@ function playPopSound() {
 
 /* ===== 初期表示 ===== */
 bubbles.forEach(createBubble);
+animate();
 
 /* ===== 追加 ===== */
 addBtn.addEventListener("click", addBubble);
@@ -39,7 +41,9 @@ function addBubble() {
     text: input.value,
     size,
     x: Math.random() * (window.innerWidth - size),
-    y: Math.random() * (window.innerHeight - size - 120)
+    y: Math.random() * (window.innerHeight - size - 120),
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3
   };
 
   bubbles.push(data);
@@ -63,9 +67,10 @@ function createBubble(data) {
   bubble.style.left = `${data.x}px`;
   bubble.style.top = `${data.y}px`;
   bubble.dataset.id = data.id;
-
   bubble.innerHTML = `<span>${data.text}</span>`;
   tank.appendChild(bubble);
+
+  bubbleElements.push({ el: bubble, data });
 
   const popBubble = () => {
     if (bubble.classList.contains("pop")) return;
@@ -76,6 +81,7 @@ function createBubble(data) {
 
     setTimeout(() => {
       bubble.remove();
+      bubbleElements = bubbleElements.filter(b => b.el !== bubble);
       bubbles = bubbles.filter(b => b.id !== data.id);
       save();
     }, 450);
@@ -94,7 +100,31 @@ function createBubble(data) {
   });
 }
 
-/* ===== シュワシュワ粒子 ===== */
+/* ===== 自動ふよふよ ===== */
+function animate() {
+  bubbleElements.forEach(obj => {
+    const b = obj.data;
+    const el = obj.el;
+
+    b.x += b.vx;
+    b.y += b.vy;
+
+    /* 画面端で反転 */
+    if (b.x <= 0 || b.x + b.size >= window.innerWidth) {
+      b.vx *= -1;
+    }
+    if (b.y <= 0 || b.y + b.size >= window.innerHeight - 100) {
+      b.vy *= -1;
+    }
+
+    el.style.left = `${b.x}px`;
+    el.style.top = `${b.y}px`;
+  });
+
+  requestAnimationFrame(animate);
+}
+
+/* ===== シュワシュワ ===== */
 function createFizz(bubble) {
   const rect = bubble.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
@@ -122,7 +152,7 @@ function save() {
   localStorage.setItem("bubbles", JSON.stringify(bubbles));
 }
 
-/* ===== 入力時の画面ズレ防止（iOS） ===== */
+/* ===== 入力フォーカス時のズレ防止 ===== */
 input.addEventListener("focus", () => {
   document.body.style.position = "fixed";
   document.body.style.width = "100%";
@@ -132,64 +162,3 @@ input.addEventListener("blur", () => {
   document.body.style.position = "";
   document.body.style.width = "";
 });
-
-/* =====================================================
-   📱 スマホを振ったらバブルが散らばる
-===================================================== */
-
-/* iOS：センサー許可 */
-if (
-  typeof DeviceMotionEvent !== "undefined" &&
-  typeof DeviceMotionEvent.requestPermission === "function"
-) {
-  document.body.addEventListener(
-    "click",
-    () => {
-      DeviceMotionEvent.requestPermission();
-    },
-    { once: true }
-  );
-}
-
-/* シェイク検知 */
-let lastShakeTime = 0;
-
-window.addEventListener("devicemotion", (e) => {
-  const acc = e.accelerationIncludingGravity;
-  if (!acc) return;
-
-  const power =
-    Math.abs(acc.x || 0) +
-    Math.abs(acc.y || 0) +
-    Math.abs(acc.z || 0);
-
-  const now = Date.now();
-
-  // しっかり振ったときだけ反応
-  if (power > 25 && now - lastShakeTime > 1200) {
-    lastShakeTime = now;
-    scatterBubbles();
-  }
-});
-
-/* バブルを散らす */
-function scatterBubbles() {
-  const all = document.querySelectorAll(".bubble");
-
-  all.forEach(bubble => {
-    const dx = (Math.random() - 0.5) * 160;
-    const dy = (Math.random() - 0.5) * 160;
-
-    bubble.animate(
-      [
-        { transform: "translate(0,0)" },
-        { transform: `translate(${dx}px, ${dy}px)` }
-      ],
-      {
-        duration: 700,
-        easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
-        fill: "forwards"
-      }
-    );
-  });
-}
