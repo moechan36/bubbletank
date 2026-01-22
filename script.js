@@ -48,7 +48,7 @@ function addBubble() {
   input.value = "";
 }
 
-/* 文字量でサイズ調整（SPでも大きくなりすぎない） */
+/* サイズ調整（SP配慮） */
 function calcSize(text) {
   const base = window.innerWidth < 600 ? 80 : 90;
   const extra = Math.min(text.length * 2.5, 70);
@@ -67,9 +67,9 @@ function createBubble(data) {
   bubble.innerHTML = `<span>${data.text}</span>`;
   tank.appendChild(bubble);
 
-  /* 弾ける処理 */
   const popBubble = () => {
     if (bubble.classList.contains("pop")) return;
+
     bubble.classList.add("pop");
     playPopSound();
     createFizz(bubble);
@@ -81,7 +81,7 @@ function createBubble(data) {
     }, 450);
   };
 
-  /* PC：ダブルクリック */
+  /* PC */
   bubble.addEventListener("dblclick", popBubble);
 
   /* SP：長押し */
@@ -94,15 +94,13 @@ function createBubble(data) {
   });
 }
 
-/* ===== シュワシュワ生成 ===== */
+/* ===== シュワシュワ ===== */
 function createFizz(bubble) {
   const rect = bubble.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
   const cy = rect.top + rect.height / 2;
 
-  const count = 22;
-
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < 22; i++) {
     const p = document.createElement("div");
     p.className = "splash";
     p.style.left = `${cx}px`;
@@ -123,3 +121,14 @@ function createFizz(bubble) {
 function save() {
   localStorage.setItem("bubbles", JSON.stringify(bubbles));
 }
+
+/* ===== 入力フォーカス時のズレ防止（iOS） ===== */
+input.addEventListener("focus", () => {
+  document.body.style.position = "fixed";
+  document.body.style.width = "100%";
+});
+
+input.addEventListener("blur", () => {
+  document.body.style.position = "";
+  document.body.style.width = "";
+});

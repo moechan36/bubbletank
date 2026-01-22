@@ -3,7 +3,7 @@ html, body {
   padding: 0;
   height: 100%;
   background: #0b1320;
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: hidden;
 }
 
@@ -42,7 +42,6 @@ html, body {
   animation: float 6s ease-in-out infinite;
 }
 
-/* 中の文字 */
 .bubble span {
   font-size: 14px;
   color: rgba(255,255,255,0.95);
@@ -52,7 +51,7 @@ html, body {
   text-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
 
-/* その場でふよふよ */
+/* ふよふよ */
 @keyframes float {
   0%   { transform: translateY(0); }
   50%  { transform: translateY(-10px); }
@@ -111,7 +110,7 @@ html, body {
   }
 }
 
-/* ===== 入力 ===== */
+/* ===== 入力エリア ===== */
 #inputArea {
   position: fixed;
   bottom: 16px;
@@ -126,7 +125,11 @@ html, body {
   border-radius: 20px;
   border: none;
   width: 220px;
-  font-size: 16px; /* ← 超重要：ズーム防止 */
+
+  font-size: 16px;                 /* ← iOSズーム防止の核心 */
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;  /* 念押し */
+
 }
 
 #inputArea button {
@@ -139,7 +142,7 @@ html, body {
   cursor: pointer;
 }
 
-/* ===== SP調整 ===== */
+/* ===== SP微調整 ===== */
 @media (max-width: 600px) {
   #inputArea {
     bottom: 80px; /* キーボード回避 */
